@@ -351,17 +351,39 @@ const GENERIC_TEMPLATE = { categories: [
 
 /* ---------------- storage helpers ---------------- */
 
+async function storageGet(key){
+  if(window.storage && typeof window.storage.get === 'function'){
+    return await window.storage.get(key);
+  }
+  const value = window.localStorage.getItem(key);
+  return value === null ? null : { value };
+}
+
+async function storageSet(key, value){
+  if(window.storage && typeof window.storage.set === 'function'){
+    return await window.storage.set(key, value);
+  }
+  window.localStorage.setItem(key, value);
+}
+
+async function storageDelete(key){
+  if(window.storage && typeof window.storage.delete === 'function'){
+    return await window.storage.delete(key);
+  }
+  window.localStorage.removeItem(key);
+}
+
 async function loadTrips(){
   try{
-    const res = await window.storage.get('trips-list');
+    const res = await storageGet('trips-list');
     if(res && res.value) return JSON.parse(res.value);
   }catch(e){ /* not found yet */ }
-  await window.storage.set('trips-list', JSON.stringify(DEFAULT_TRIPS));
+  await storageSet('trips-list', JSON.stringify(DEFAULT_TRIPS));
   return DEFAULT_TRIPS.slice();
 }
 
 async function saveTrips(trips){
-  try{ await window.storage.set('trips-list', JSON.stringify(trips)); }
+  try{ await storageSet('trips-list', JSON.stringify(trips)); }
   catch(e){ console.error('erro ao salvar lista de viagens', e); }
 }
 
@@ -376,7 +398,7 @@ async function ensurePrivateSeed(id, data){
 
 async function loadTripData(id){
   try{
-    const res = await window.storage.get('trip-data:' + id);
+    const res = await storageGet('trip-data:' + id);
     if(res && res.value){
       const data = JSON.parse(res.value);
       if(await ensurePrivateSeed(id, data)) await saveTripData(id, data);
@@ -391,12 +413,12 @@ async function loadTripData(id){
 }
 
 async function saveTripData(id, data){
-  try{ await window.storage.set('trip-data:' + id, JSON.stringify(data)); }
+  try{ await storageSet('trip-data:' + id, JSON.stringify(data)); }
   catch(e){ console.error('erro ao salvar itens da viagem', e); }
 }
 
 async function deleteTripData(id){
-  try{ await window.storage.delete('trip-data:' + id); }catch(e){}
+  try{ await storageDelete('trip-data:' + id); }catch(e){}
 }
 
 function countProgress(data){
