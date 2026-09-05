@@ -9,7 +9,7 @@ Esta é a terceira versão do projeto, com uma área privada para a checklist pe
 - Controle discreto no rodapé para mostrar ou esconder os itens privados.
 - Identificação visual da categoria privada com cadeado, borda tracejada e fundo diferenciado.
 - Botão para editar o nome de qualquer item já existente na lista.
-- Opção de marcar uma sugestão como “não levar”, destacando o texto em vermelho e retirando-a da pendência.
+- Botão `✕` para marcar uma sugestão como “não levar”, destacando o texto em vermelho e retirando-a da pendência.
 - Campo de comentário individual em cada item, salvo automaticamente no navegador.
 - Manutenção da persistência, navegação, templates e progresso da etapa anterior.
 

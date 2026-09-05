@@ -209,13 +209,14 @@
   ul.items input[type="checkbox"]:focus-visible{ outline:2px solid var(--rain); outline-offset:2px; }
   li.checked .item-text{ color:#93A09A; text-decoration:line-through; text-decoration-color:#B7C0BB; opacity:0.85; }
   .item-edit{
-    flex-shrink:0; border:none; background:transparent; color:#7C8A85;
-    padding:2px 0; font-size:11.5px; font-family:inherit; cursor:pointer;
+    flex-shrink:0; border:1px solid var(--line); border-radius:6px; background:transparent; color:#7C8A85;
+    padding:2px 6px; font-size:11.5px; font-family:inherit; cursor:pointer;
   }
-  .item-edit:hover{ color:var(--teal); text-decoration:underline; }
+  .item-edit:hover{ color:var(--teal); border-color:var(--teal); background:rgba(46,81,80,0.05); }
   .item-edit:focus-visible{ outline:2px solid var(--rain); outline-offset:2px; border-radius:3px; }
-  .item-reject{ flex-shrink:0; border:none; background:transparent; color:#B2603E; padding:2px 0; font-size:11.5px; font-family:inherit; cursor:pointer; }
-  .item-reject:hover{ color:#8F3F28; text-decoration:underline; }
+  .item-reject{ flex-shrink:0; border:1px solid rgba(178,96,62,0.45); border-radius:6px; background:transparent; color:#B2603E; padding:2px 7px; font-size:13px; line-height:1.1; font-family:inherit; cursor:pointer; }
+  .item-reject:hover{ color:#8F3F28; border-color:#8F3F28; background:rgba(178,96,62,0.06); }
+  .item-reject.active{ background:rgba(178,96,62,0.12); border-color:#B2603E; }
   .item-reject:focus-visible{ outline:2px solid var(--rain); outline-offset:2px; border-radius:3px; }
   li.not-taking .item-text{ color:#B2603E; text-decoration:line-through; text-decoration-color:#B2603E; opacity:0.9; }
   .item-text-edit{
@@ -723,7 +724,9 @@ async function renderTripPage(id){
         const rejectBtn = document.createElement('button');
         rejectBtn.type = 'button';
         rejectBtn.className = 'item-reject';
-        rejectBtn.textContent = item.skip ? 'levar' : 'não levar';
+        rejectBtn.textContent = '✕';
+        rejectBtn.title = item.skip ? 'Voltar a levar este item' : 'Marcar como não levar';
+        rejectBtn.classList.toggle('active', !!item.skip);
         rejectBtn.setAttribute('aria-label', item.skip ? `Voltar a levar ${item.text}` : `Marcar que não quer levar ${item.text}`);
         rejectBtn.addEventListener('click', (e) => {
           e.stopPropagation();
