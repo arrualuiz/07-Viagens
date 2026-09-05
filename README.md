@@ -8,6 +8,7 @@ Esta é a terceira versão do projeto, com uma área privada para a checklist pe
 - Categoria privada oculta por padrão para separar tarefas pessoais da lista compartilhada.
 - Controle discreto no rodapé para mostrar ou esconder os itens privados.
 - Identificação visual da categoria privada com cadeado, borda tracejada e fundo diferenciado.
+- Botão para editar o nome de qualquer item já existente na lista.
 - Campo de comentário individual em cada item, salvo automaticamente no navegador.
 - Manutenção da persistência, navegação, templates e progresso da etapa anterior.
 

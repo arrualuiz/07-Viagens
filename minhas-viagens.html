@@ -188,7 +188,8 @@
 
   ul.items{ list-style:none; margin:0; padding:0; }
   ul.items li{ display:block; padding:8px 0; }
-  ul.items label{ display:flex; align-items:flex-start; gap:10px; cursor:pointer; width:100%; font-size:14.5px; }
+  .item-main{ display:flex; align-items:flex-start; gap:8px; }
+  ul.items label{ display:flex; align-items:flex-start; gap:10px; cursor:pointer; flex:1; min-width:0; font-size:14.5px; }
   ul.items input[type="checkbox"]{
     appearance:none; -webkit-appearance:none;
     width:19px; height:19px; flex-shrink:0; margin-top:1px;
@@ -207,6 +208,26 @@
   ul.items input[type="checkbox"]:checked{ border-color:var(--teal); background:rgba(46,81,80,0.06); }
   ul.items input[type="checkbox"]:focus-visible{ outline:2px solid var(--rain); outline-offset:2px; }
   li.checked .item-text{ color:#93A09A; text-decoration:line-through; text-decoration-color:#B7C0BB; opacity:0.85; }
+  .item-edit{
+    flex-shrink:0; border:none; background:transparent; color:#7C8A85;
+    padding:2px 0; font-size:11.5px; font-family:inherit; cursor:pointer;
+  }
+  .item-edit:hover{ color:var(--teal); text-decoration:underline; }
+  .item-edit:focus-visible{ outline:2px solid var(--rain); outline-offset:2px; border-radius:3px; }
+  .item-text-edit{
+    flex:1; min-width:0; border:1px solid var(--line); background:var(--card);
+    border-radius:7px; padding:5px 8px; font-size:14px; font-family:inherit; color:var(--ink);
+  }
+  .item-text-edit:focus-visible{ outline:2px solid var(--rain); outline-offset:1px; }
+  .item-edit-actions{ display:flex; gap:5px; flex-shrink:0; }
+  .item-edit-actions button{
+    border:none; border-radius:7px; padding:5px 8px; font-size:11.5px;
+    font-family:inherit; cursor:pointer;
+  }
+  .item-save{ background:var(--teal); color:#F2EFE6; }
+  .item-cancel{ background:transparent; color:#6C7873; }
+  .item-save:hover{ background:var(--teal-deep); }
+  .item-cancel:hover{ color:var(--ink); }
   .item-comment{
     display:block; width:calc(100% - 29px); margin:4px 0 0 29px;
     border:none; border-bottom:1px dashed var(--line); background:transparent;
@@ -638,13 +659,59 @@ async function renderTripPage(id){
         const li = document.createElement('li');
         if(item.checked) li.classList.add('checked');
         const cbId = `c${ci}-i${ii}`;
-        li.innerHTML = `<label for="${cbId}"><input type="checkbox" id="${cbId}" ${item.checked ? 'checked' : ''}><span class="item-text">${item.text}</span></label>`;
-        const cb = li.querySelector('input');
+        const itemMain = document.createElement('div');
+        itemMain.className = 'item-main';
+        itemMain.innerHTML = `<label for="${cbId}"><input type="checkbox" id="${cbId}" ${item.checked ? 'checked' : ''}><span class="item-text">${item.text}</span></label>`;
+        const cb = itemMain.querySelector('input');
         cb.addEventListener('change', () => {
           item.checked = cb.checked;
           li.classList.toggle('checked', cb.checked);
           persist();
         });
+        const editBtn = document.createElement('button');
+        editBtn.type = 'button';
+        editBtn.className = 'item-edit';
+        editBtn.textContent = 'editar';
+        editBtn.setAttribute('aria-label', `Editar item ${item.text}`);
+        editBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const textInput = document.createElement('input');
+          textInput.type = 'text';
+          textInput.className = 'item-text-edit';
+          textInput.value = item.text;
+          textInput.setAttribute('aria-label', 'Nome do item');
+
+          const actions = document.createElement('div');
+          actions.className = 'item-edit-actions';
+          const saveBtn = document.createElement('button');
+          saveBtn.type = 'button';
+          saveBtn.className = 'item-save';
+          saveBtn.textContent = 'Salvar';
+          const cancelBtn = document.createElement('button');
+          cancelBtn.type = 'button';
+          cancelBtn.className = 'item-cancel';
+          cancelBtn.textContent = 'Cancelar';
+          actions.append(saveBtn, cancelBtn);
+          itemMain.replaceChildren(textInput, actions);
+
+          function saveEdit(){
+            const value = textInput.value.trim();
+            if(!value){ textInput.focus(); return; }
+            item.text = value;
+            persist();
+            renderCategories();
+          }
+          saveBtn.addEventListener('click', saveEdit);
+          cancelBtn.addEventListener('click', () => renderCategories());
+          textInput.addEventListener('keydown', (event) => {
+            if(event.key === 'Enter'){ event.preventDefault(); saveEdit(); }
+            if(event.key === 'Escape'){ renderCategories(); }
+          });
+          textInput.focus();
+          textInput.select();
+        });
+        itemMain.appendChild(editBtn);
+        li.appendChild(itemMain);
         const commentInput = document.createElement('input');
         commentInput.type = 'text';
         commentInput.className = 'item-comment';
