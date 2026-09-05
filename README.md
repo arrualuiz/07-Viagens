@@ -1,14 +1,14 @@
-# Minhas viagens — etapa 1
+# Minhas viagens — etapa 2
 
-Esta é a primeira versão do projeto: uma página única para organizar a mala de um fim de semana em Guaratuba, no Paraná.
+Esta é a segunda versão do projeto. A checklist de Guaratuba evoluiu para um pequeno app capaz de reunir várias viagens.
 
-## Funcionalidades
+## Evolução
 
-- Cabeçalho com destino, datas e informações da hospedagem.
-- Previsão do tempo e alerta de frio e chuva.
-- Checklist dividido por categorias.
-- Progresso geral da mala atualizado ao marcar os itens.
-- Inclusão de novos itens em cada categoria.
-- Layout responsivo com identidade visual editorial.
+- A página agora apresenta cards para várias viagens.
+- É possível abrir cada checklist por navegação na URL.
+- Viagens podem ser criadas e excluídas.
+- Dados e progresso ficam persistidos com `window.storage`.
+- Novos itens e categorias podem ser adicionados na página da viagem.
+- Cada viagem possui template, cor e progresso próprios.
 
-Nesta etapa, a experiência é focada em uma viagem específica.
+O arquivo foi renomeado de `lista-guaratuba.html` para `minhas-viagens.html` para refletir o novo escopo do projeto.

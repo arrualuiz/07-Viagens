@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Minhas viagens</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1F2E2C;
+    --paper:#E3E1D6;
+    --card:#FBFAF6;
+    --teal:#2E5150;
+    --teal-deep:#213938;
+    --fog:#93A9AC;
+    --rain:#5B7C99;
+    --amber:#D6A339;
+    --line: rgba(31,46,44,0.14);
+  }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background:
+      radial-gradient(ellipse 900px 400px at 50% -80px, rgba(147,169,172,0.35), transparent 70%),
+      var(--paper);
+    color:var(--ink);
+    font-family:'Work Sans', sans-serif;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+  .wrap{ max-width:920px; margin:0 auto; padding:0 20px 80px; }
+  a{ color:inherit; }
+  button{ font-family:inherit; }
+
+  /* ---------- shared hero band ---------- */
+  .hero{
+    color:#F2EFE6;
+    margin:0 -20px 0;
+    padding:40px 20px 34px;
+    border-radius:0 0 28px 28px;
+    position:relative;
+    overflow:hidden;
+    background: linear-gradient(155deg, var(--teal) 0%, var(--teal-deep) 78%);
+  }
+  .hero::before{
+    content:"";
+    position:absolute; inset:0;
+    background-image: repeating-linear-gradient(100deg, rgba(255,255,255,0.045) 0 2px, transparent 2px 90px);
+    pointer-events:none;
+  }
+  .hero-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:16px; position:relative; }
+  .stamp{
+    border:1.5px solid rgba(242,239,230,0.55);
+    border-radius:50%;
+    width:60px; height:60px;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Fraunces', serif;
+    font-size:10.5px;
+    letter-spacing:0.03em;
+    text-align:center;
+    transform:rotate(-8deg);
+    flex-shrink:0;
+    opacity:0.9;
+  }
+  .kicker{ font-size:13px; color:#C7D6D3; margin:0 0 6px; }
+  h1.title{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:clamp(34px, 7vw, 54px);
+    line-height:0.98;
+    margin:0 0 8px;
+    letter-spacing:-0.01em;
+  }
+  .sub{ font-size:15px; color:#DCE6DE; }
+  .back-link{
+    display:inline-flex; align-items:center; gap:6px;
+    font-size:13.5px; color:#DCE6DE;
+    text-decoration:none;
+    margin-bottom:14px;
+    cursor:pointer;
+    background:none; border:none; padding:0;
+  }
+  .back-link:hover{ color:#fff; }
+
+  .note-chip{
+    margin-top:18px;
+    display:inline-flex; align-items:center; gap:8px;
+    background:rgba(214,163,57,0.16);
+    border:1px solid rgba(214,163,57,0.4);
+    color:#F0DBA8;
+    font-size:13px;
+    padding:7px 12px;
+    border-radius:999px;
+  }
+  .note-chip .dot{ width:7px; height:7px; border-radius:50%; background:var(--amber); flex-shrink:0; }
+
+  /* ---------- home: trip grid ---------- */
+  .home-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(230px,1fr));
+    gap:16px;
+    margin-top:30px;
+  }
+  .trip-card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:18px;
+    overflow:hidden;
+    cursor:pointer;
+    text-align:left;
+    position:relative;
+    transition:transform 0.12s ease;
+  }
+  .trip-card:hover{ transform:translateY(-2px); }
+  .trip-card:focus-visible{ outline:2px solid var(--rain); outline-offset:2px; }
+  .trip-band{ height:64px; position:relative; }
+  .trip-stamp{
+    position:absolute; right:12px; top:12px;
+    width:38px; height:38px;
+    border-radius:50%;
+    border:1.5px solid rgba(255,255,255,0.6);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Fraunces', serif;
+    font-size:10px;
+    color:#fff;
+    transform:rotate(6deg);
+  }
+  .trip-body{ padding:14px 16px 16px; }
+  .trip-body h3{
+    font-family:'Fraunces', serif;
+    font-weight:500;
+    font-size:19px;
+    margin:0 0 3px;
+    color:var(--teal-deep);
+  }
+  .trip-place{ font-size:13px; color:#6C7873; margin:0 0 12px; }
+  .trip-progress-row{ display:flex; align-items:center; gap:8px; }
+  .trip-progress-track{ flex:1; height:6px; border-radius:999px; background:rgba(31,46,44,0.1); overflow:hidden; }
+  .trip-progress-fill{ height:100%; border-radius:999px; background:linear-gradient(90deg, var(--rain), var(--teal)); }
+  .trip-progress-count{ font-size:11.5px; color:#7C8A85; white-space:nowrap; }
+  .trip-delete{
+    position:absolute; left:10px; top:10px;
+    width:24px; height:24px;
+    border-radius:50%;
+    border:none;
+    background:rgba(0,0,0,0.18);
+    color:#fff;
+    font-size:14px;
+    line-height:1;
+    cursor:pointer;
+    display:none;
+    align-items:center; justify-content:center;
+  }
+  .trip-card:hover .trip-delete{ display:flex; }
+
+  .add-trip-card{
+    border:1.5px dashed var(--fog);
+    border-radius:18px;
+    background:transparent;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:6px;
+    min-height:150px;
+    cursor:pointer;
+    color:var(--teal-deep);
+    font-size:14px;
+  }
+  .add-trip-card:hover{ background:rgba(46,81,80,0.05); }
+  .add-trip-card .plus{ font-family:'Fraunces', serif; font-size:30px; line-height:1; }
+
+  /* ---------- progress + context (trip page) ---------- */
+  .progress-bar-outer{ margin:28px 0 8px; display:flex; align-items:center; gap:14px; }
+  .progress-track{ flex:1; height:8px; background:rgba(31,46,44,0.1); border-radius:999px; overflow:hidden; }
+  .progress-fill{ height:100%; background:linear-gradient(90deg, var(--rain), var(--teal)); width:0%; transition:width 0.4s ease; border-radius:999px; }
+  .progress-count{ font-family:'Fraunces', serif; font-size:15px; white-space:nowrap; }
+  .progress-note{ font-size:13px; color:#5C6764; margin:0 0 26px; }
+
+  /* ---------- category cards ---------- */
+  .grid{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  @media (max-width:640px){ .grid{ grid-template-columns:1fr; } .home-grid{ grid-template-columns:repeat(auto-fill, minmax(160px,1fr)); } }
+
+  .card{ background:var(--card); border:1px solid var(--line); border-radius:18px; padding:18px 18px 14px; }
+  .card-head{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:10px; gap:10px; }
+  .card-head h2{ font-family:'Fraunces', serif; font-weight:500; font-size:18px; margin:0; color:var(--teal-deep); }
+  .card-count{ font-size:12px; color:#7C8A85; white-space:nowrap; }
+
+  ul.items{ list-style:none; margin:0; padding:0; }
+  ul.items li{ display:flex; align-items:flex-start; gap:10px; padding:7px 0; }
+  ul.items label{ display:flex; align-items:flex-start; gap:10px; cursor:pointer; width:100%; font-size:14.5px; }
+  ul.items input[type="checkbox"]{
+    appearance:none; -webkit-appearance:none;
+    width:19px; height:19px; flex-shrink:0; margin-top:1px;
+    border:1.5px solid var(--fog); border-radius:6px;
+    display:grid; place-content:center; cursor:pointer;
+  }
+  ul.items input[type="checkbox"]::before{
+    content:"";
+    width:10px; height:10px;
+    transform:scale(0);
+    transition:transform 0.12s ease-in;
+    box-shadow: inset 1em 1em var(--teal);
+    clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 45% 62%);
+  }
+  ul.items input[type="checkbox"]:checked::before{ transform:scale(1); }
+  ul.items input[type="checkbox"]:checked{ border-color:var(--teal); background:rgba(46,81,80,0.06); }
+  ul.items input[type="checkbox"]:focus-visible{ outline:2px solid var(--rain); outline-offset:2px; }
+  li.checked .item-text{ color:#93A09A; text-decoration:line-through; text-decoration-color:#B7C0BB; opacity:0.85; }
+
+  .add-row{ display:flex; gap:8px; margin-top:12px; padding-top:10px; border-top:1px dashed var(--line); }
+  .add-row input[type="text"]{
+    flex:1; border:1px solid var(--line); background:transparent; border-radius:9px;
+    padding:8px 10px; font-size:13.5px; font-family:inherit; color:var(--ink);
+  }
+  .add-row input[type="text"]:focus-visible{ outline:2px solid var(--rain); outline-offset:1px; }
+  .add-row button{
+    border:none; background:var(--teal); color:#F2EFE6; border-radius:9px;
+    padding:0 14px; font-size:13.5px; cursor:pointer;
+  }
+  .add-row button:hover{ background:var(--teal-deep); }
+
+  .add-category-row{
+    margin-top:20px;
+    display:flex; gap:8px;
+  }
+  .add-category-row input[type="text"]{
+    flex:1; border:1px solid var(--line); background:var(--card); border-radius:12px;
+    padding:12px 14px; font-size:14px; font-family:inherit; color:var(--ink);
+  }
+  .add-category-row button{
+    border:none; background:var(--teal-deep); color:#F2EFE6; border-radius:12px;
+    padding:0 18px; font-size:14px; cursor:pointer;
+  }
+
+  footer{ margin-top:36px; text-align:center; font-size:12.5px; color:#8C978F; }
+
+  .loading{ padding:60px 0; text-align:center; color:#7C8A85; font-size:14px; }
+
+  /* ---------- modal ---------- */
+  .modal-overlay{
+    display:none;
+    position:fixed; inset:0; background:rgba(31,46,44,0.45);
+    align-items:center; justify-content:center; z-index:50; padding:20px;
+  }
+  .modal-overlay.open{ display:flex; }
+  .modal{
+    background:var(--card); border-radius:18px; padding:24px;
+    max-width:380px; width:100%;
+  }
+  .modal h3{ font-family:'Fraunces', serif; font-size:20px; margin:0 0 16px; color:var(--teal-deep); }
+  .modal label{ display:block; font-size:12.5px; color:#5C6764; margin:12px 0 4px; }
+  .modal input[type="text"]{
+    width:100%; border:1px solid var(--line); background:transparent; border-radius:9px;
+    padding:9px 11px; font-size:14px; font-family:inherit; color:var(--ink);
+  }
+  .modal-actions{ display:flex; justify-content:flex-end; gap:10px; margin-top:20px; }
+  .modal-actions button{ border:none; border-radius:9px; padding:9px 16px; font-size:13.5px; cursor:pointer; }
+  .btn-ghost{ background:transparent; color:#5C6764; }
+  .btn-primary{ background:var(--teal); color:#F2EFE6; }
+  .btn-primary:hover{ background:var(--teal-deep); }
+
+  @media (prefers-reduced-motion: reduce){ .progress-fill{ transition:none; } .trip-card{ transition:none; } }
+</style>
+</head>
+<body>
+<div class="wrap" id="app">
+  <div class="loading">carregando suas viagens…</div>
+</div>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h3>Nova viagem</h3>
+    <label for="mName">Nome</label>
+    <input type="text" id="mName" placeholder="ex: Bonito com a galera">
+    <label for="mPlace">Destino</label>
+    <input type="text" id="mPlace" placeholder="ex: Bonito, MS">
+    <label for="mDate">Datas</label>
+    <input type="text" id="mDate" placeholder="ex: 12 a 15 de dezembro">
+    <div class="modal-actions">
+      <button class="btn-ghost" id="mCancel">Cancelar</button>
+      <button class="btn-primary" id="mCreate">Criar viagem</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ---------------- data ---------------- */
+
+const PALETTE = ['#2E5150', '#D6A339', '#B2603E', '#3B6E8F', '#8A6C9C', '#5B7C99'];
+
+function slugify(str){
+  return str.toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/[^a-z0-9]+/g,'-')
+    .replace(/(^-|-$)/g,'') || 'viagem';
+}
+
+const DEFAULT_TRIPS = [
+  { id:'guaratuba-set',  name:'Guaratuba com a galera', place:'Guaratuba, PR', dateLabel:'5 a 7 de setembro', color:'#D6A339',
+    note:'Frio chegando com chuva no fim de semana — leva casaco e algo pra chuva.' },
+  { id:'rio-de-janeiro', name:'Rio de Janeiro', place:'Rio de Janeiro, RJ', dateLabel:'datas a confirmar', color:'#B2603E', note:'' },
+  { id:'portugal',       name:'Portugal', place:'Portugal', dateLabel:'datas a confirmar', color:'#3B6E8F',
+    note:'Roteiro em mais de uma cidade — vale levar roupa em camadas.' },
+  { id:'matinhos-mae',   name:'Matinhos com a minha mãe', place:'Matinhos, PR', dateLabel:'datas a confirmar', color:'#8A6C9C', note:'' },
+];
+
+const DEFAULT_TRIP_DATA = {
+  'guaratuba-set': { categories: [
+    { name:'Frio e chuva', items:['Casaco ou moletom','Calça comprida','Meia quente','Pijama de frio','Guarda-chuva ou capa de chuva','Tênis fechado'] },
+    { name:'Piscina e hidro', items:['Maiô ou sunga','Toalha','Chinelo de dedo','Roupão ou canga','Protetor solar'] },
+    { name:'Comemoração', items:['Roupa mais arrumada pra noite','Presente pra aniversariante','Algo pra contribuir no brinde'] },
+    { name:'Rateio e documentos', items:['Documento com foto','Dinheiro ou chave pix pro rateio','Confirmação da reserva','Carregador de celular'] },
+    { name:'Higiene e saúde', items:['Escova e pasta de dente','Remédios de uso pessoal','Repelente','Necessaire básica'] },
+    { name:'Pra casa toda', items:['Jogo de cartas ou tabuleiro','Caixa de som bluetooth','Squeeze de água','Lanterna'] },
+  ]},
+  'rio-de-janeiro': { categories: [
+    { name:'Roupas leves', items:['Roupa de sol e praia','Roupa pra sair à noite','Chinelo','Tênis confortável pra caminhar'] },
+    { name:'Praia', items:['Maiô ou sunga','Protetor solar','Canga','Óculos de sol'] },
+    { name:'Documentos e dinheiro', items:['Documento com foto','Cartão e dinheiro','Carregador de celular'] },
+    { name:'Higiene', items:['Escova e pasta de dente','Remédios de uso pessoal','Necessaire básica'] },
+  ]},
+  'portugal': { categories: [
+    { name:'Documentos de viagem', items:['Passaporte','Seguro viagem','Reserva de hospedagem impressa ou salva','Câmbio em euros'] },
+    { name:'Roupas em camadas', items:['Casaco leve','Blusa de manga longa','Sapato confortável pra caminhar','Capa de chuva'] },
+    { name:'Eletrônicos', items:['Adaptador de tomada','Carregador de celular','Power bank'] },
+    { name:'Higiene', items:['Escova e pasta de dente','Remédios de uso pessoal','Necessaire básica'] },
+  ]},
+  'matinhos-mae': { categories: [
+    { name:'Roupas confortáveis', items:['Roupa leve pro dia','Casaquinho pra noite','Sapato bom pra caminhada na praia'] },
+    { name:'Praia tranquila', items:['Cadeira ou canga','Chapéu ou boné','Protetor solar','Guarda-sol'] },
+    { name:'Conforto da mamãe', items:['Remédios de uso contínuo','Travesseiro de pescoço','Algo pra ler ou fazer no trajeto'] },
+    { name:'Documentos', items:['Documento com foto','Carteirinha do convênio, se tiver'] },
+  ]},
+};
+
+const GENERIC_TEMPLATE = { categories: [
+  { name:'Roupas', items:['Roupas pro número de dias','Casaco ou agasalho','Calçado confortável','Pijama'] },
+  { name:'Documentos e dinheiro', items:['Documento com foto','Cartão e dinheiro','Confirmação da reserva'] },
+  { name:'Higiene e saúde', items:['Escova e pasta de dente','Remédios de uso pessoal','Necessaire básica'] },
+  { name:'Eletrônicos', items:['Carregador de celular','Fone de ouvido'] },
+]};
+
+/* ---------------- storage helpers ---------------- */
+
+async function loadTrips(){
+  try{
+    const res = await window.storage.get('trips-list');
+    if(res && res.value) return JSON.parse(res.value);
+  }catch(e){ /* not found yet */ }
+  await window.storage.set('trips-list', JSON.stringify(DEFAULT_TRIPS));
+  return DEFAULT_TRIPS.slice();
+}
+
+async function saveTrips(trips){
+  try{ await window.storage.set('trips-list', JSON.stringify(trips)); }
+  catch(e){ console.error('erro ao salvar lista de viagens', e); }
+}
+
+async function loadTripData(id){
+  try{
+    const res = await window.storage.get('trip-data:' + id);
+    if(res && res.value) return JSON.parse(res.value);
+  }catch(e){ /* not found yet */ }
+  const seed = DEFAULT_TRIP_DATA[id] ? JSON.parse(JSON.stringify(DEFAULT_TRIP_DATA[id])) : JSON.parse(JSON.stringify(GENERIC_TEMPLATE));
+  seed.categories.forEach(cat => { cat.items = cat.items.map(text => (typeof text === 'string' ? { text, checked:false } : text)); });
+  await saveTripData(id, seed);
+  return seed;
+}
+
+async function saveTripData(id, data){
+  try{ await window.storage.set('trip-data:' + id, JSON.stringify(data)); }
+  catch(e){ console.error('erro ao salvar itens da viagem', e); }
+}
+
+async function deleteTripData(id){
+  try{ await window.storage.delete('trip-data:' + id); }catch(e){}
+}
+
+function countProgress(data){
+  let total = 0, done = 0;
+  data.categories.forEach(cat => cat.items.forEach(it => { total++; if(it.checked) done++; }));
+  return { total, done };
+}
+
+/* ---------------- routing ---------------- */
+
+const app = document.getElementById('app');
+
+function goHome(){ window.location.hash = ''; }
+function goTrip(id){ window.location.hash = 'trip/' + id; }
+
+window.addEventListener('hashchange', render);
+render();
+
+async function render(){
+  const hash = window.location.hash.replace('#','');
+  if(hash.startsWith('trip/')){
+    await renderTripPage(hash.slice(5));
+  } else {
+    await renderHome();
+  }
+}
+
+/* ---------------- home page ---------------- */
+
+async function renderHome(){
+  app.innerHTML = `
+    <div class="hero">
+      <div class="hero-top">
+        <div>
+          <p class="kicker">seu caderno de viagens</p>
+          <h1 class="title">Minhas viagens</h1>
+          <p class="sub">clique numa viagem pra abrir a lista da mala</p>
+        </div>
+        <div class="stamp">SUAS<br>VIAGENS</div>
+      </div>
+    </div>
+    <div class="home-grid" id="homeGrid">
+      <div class="loading" style="grid-column:1/-1">carregando…</div>
+    </div>
+  `;
+
+  const trips = await loadTrips();
+  const withProgress = await Promise.all(trips.map(async t => {
+    const data = await loadTripData(t.id);
+    return { ...t, progress: countProgress(data) };
+  }));
+
+  const grid = document.getElementById('homeGrid');
+  grid.innerHTML = '';
+
+  withProgress.forEach(t => {
+    const initials = t.place.split(',')[0].trim().slice(0,3).toUpperCase();
+    const pct = t.progress.total ? (t.progress.done / t.progress.total * 100) : 0;
+    const card = document.createElement('div');
+    card.className = 'trip-card';
+    card.tabIndex = 0;
+    card.setAttribute('role','button');
+    card.innerHTML = `
+      <button class="trip-delete" title="Excluir viagem" aria-label="Excluir viagem">×</button>
+      <div class="trip-band" style="background:${t.color}"><div class="trip-stamp">${initials}</div></div>
+      <div class="trip-body">
+        <h3>${t.name}</h3>
+        <p class="trip-place">${t.place} · ${t.dateLabel}</p>
+        <div class="trip-progress-row">
+          <div class="trip-progress-track"><div class="trip-progress-fill" style="width:${pct}%"></div></div>
+          <span class="trip-progress-count">${t.progress.done}/${t.progress.total}</span>
+        </div>
+      </div>
+    `;
+    card.addEventListener('click', (e) => {
+      if(e.target.closest('.trip-delete')) return;
+      goTrip(t.id);
+    });
+    card.addEventListener('keydown', e => { if(e.key === 'Enter') goTrip(t.id); });
+    card.querySelector('.trip-delete').addEventListener('click', async (e) => {
+      e.stopPropagation();
+      if(!confirm(`Excluir a viagem "${t.name}"? Isso apaga a lista dela também.`)) return;
+      const updated = (await loadTrips()).filter(x => x.id !== t.id);
+      await saveTrips(updated);
+      await deleteTripData(t.id);
+      renderHome();
+    });
+    grid.appendChild(card);
+  });
+
+  const addCard = document.createElement('button');
+  addCard.className = 'add-trip-card';
+  addCard.innerHTML = `<span class="plus">+</span><span>nova viagem</span>`;
+  addCard.addEventListener('click', openAddTripModal);
+  grid.appendChild(addCard);
+}
+
+/* ---------------- add trip modal ---------------- */
+
+const overlay = document.getElementById('modalOverlay');
+document.getElementById('mCancel').addEventListener('click', closeModal);
+overlay.addEventListener('click', e => { if(e.target === overlay) closeModal(); });
+
+function openAddTripModal(){
+  document.getElementById('mName').value = '';
+  document.getElementById('mPlace').value = '';
+  document.getElementById('mDate').value = '';
+  overlay.classList.add('open');
+  document.getElementById('mName').focus();
+}
+function closeModal(){ overlay.classList.remove('open'); }
+
+document.getElementById('mCreate').addEventListener('click', async () => {
+  const name = document.getElementById('mName').value.trim();
+  const place = document.getElementById('mPlace').value.trim() || name;
+  const dateLabel = document.getElementById('mDate').value.trim() || 'datas a confirmar';
+  if(!name) return;
+  const trips = await loadTrips();
+  let id = slugify(name);
+  if(trips.some(t => t.id === id)) id = id + '-' + Date.now().toString(36).slice(-4);
+  const color = PALETTE[trips.length % PALETTE.length];
+  const newTrip = { id, name, place, dateLabel, color, note:'' };
+  trips.push(newTrip);
+  await saveTrips(trips);
+  await saveTripData(id, JSON.parse(JSON.stringify(GENERIC_TEMPLATE)).categories
+    ? { categories: JSON.parse(JSON.stringify(GENERIC_TEMPLATE)).categories.map(c => ({ name:c.name, items:c.items.map(text => ({text,checked:false})) })) }
+    : { categories: [] });
+  closeModal();
+  goTrip(id);
+});
+
+/* ---------------- trip page ---------------- */
+
+async function renderTripPage(id){
+  app.innerHTML = `<div class="loading">carregando a mala…</div>`;
+
+  const trips = await loadTrips();
+  const trip = trips.find(t => t.id === id);
+  if(!trip){
+    app.innerHTML = `<div class="loading">Essa viagem não existe mais. <button class="back-link" id="backBtn" style="color:var(--teal);text-decoration:underline;">voltar</button></div>`;
+    document.getElementById('backBtn').addEventListener('click', goHome);
+    return;
+  }
+
+  const data = await loadTripData(id);
+
+  app.innerHTML = `
+    <div class="hero" style="background:linear-gradient(155deg, ${trip.color} 0%, ${shade(trip.color)} 78%)">
+      <button class="back-link" id="backBtn">← minhas viagens</button>
+      <div class="hero-top">
+        <div>
+          <p class="kicker">${trip.place}</p>
+          <h1 class="title">${trip.name}</h1>
+          <p class="sub">${trip.dateLabel}</p>
+        </div>
+      </div>
+      ${trip.note ? `<div class="note-chip"><span class="dot"></span>${trip.note}</div>` : ''}
+    </div>
+
+    <div class="progress-bar-outer">
+      <span class="progress-count" id="progressCount">0 de 0 na mala</span>
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    </div>
+    <p class="progress-note">Marque conforme for guardando. Tudo fica salvo automaticamente.</p>
+
+    <div class="grid" id="cardGrid"></div>
+
+    <div class="add-category-row">
+      <input type="text" id="newCategoryInput" placeholder="nova categoria (ex: Trilha, Praia, Frio…)">
+      <button id="addCategoryBtn">Adicionar</button>
+    </div>
+
+    <footer>seus dados ficam salvos só pra você, neste app.</footer>
+  `;
+
+  document.getElementById('backBtn').addEventListener('click', goHome);
+
+  const grid = document.getElementById('cardGrid');
+
+  function updateProgress(){
+    const { total, done } = countProgress(data);
+    document.getElementById('progressCount').textContent = `${done} de ${total} na mala`;
+    document.getElementById('progressFill').style.width = (total ? done/total*100 : 0) + '%';
+  }
+
+  function persist(){ saveTripData(id, data); updateProgress(); }
+
+  function renderCategories(){
+    grid.innerHTML = '';
+    data.categories.forEach((cat, ci) => {
+      const card = document.createElement('div');
+      card.className = 'card';
+
+      const head = document.createElement('div');
+      head.className = 'card-head';
+      head.innerHTML = `<h2>${cat.name}</h2><span class="card-count">${cat.items.length} itens</span>`;
+      card.appendChild(head);
+
+      const ul = document.createElement('ul');
+      ul.className = 'items';
+      cat.items.forEach((item, ii) => {
+        const li = document.createElement('li');
+        if(item.checked) li.classList.add('checked');
+        const cbId = `c${ci}-i${ii}`;
+        li.innerHTML = `<label for="${cbId}"><input type="checkbox" id="${cbId}" ${item.checked ? 'checked' : ''}><span class="item-text">${item.text}</span></label>`;
+        const cb = li.querySelector('input');
+        cb.addEventListener('change', () => {
+          item.checked = cb.checked;
+          li.classList.toggle('checked', cb.checked);
+          persist();
+        });
+        ul.appendChild(li);
+      });
+      card.appendChild(ul);
+
+      const addRow = document.createElement('div');
+      addRow.className = 'add-row';
+      addRow.innerHTML = `<input type="text" placeholder="adicionar item…"><button type="button">+</button>`;
+      const input = addRow.querySelector('input');
+      const btn = addRow.querySelector('button');
+      function addItem(){
+        const val = input.value.trim();
+        if(!val) return;
+        cat.items.push({ text: val, checked:false });
+        input.value = '';
+        persist();
+        renderCategories();
+      }
+      btn.addEventListener('click', addItem);
+      input.addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); addItem(); } });
+      card.appendChild(addRow);
+
+      grid.appendChild(card);
+    });
+  }
+
+  renderCategories();
+  updateProgress();
+
+  document.getElementById('addCategoryBtn').addEventListener('click', () => {
+    const input = document.getElementById('newCategoryInput');
+    const name = input.value.trim();
+    if(!name) return;
+    data.categories.push({ name, items: [] });
+    input.value = '';
+    persist();
+    renderCategories();
+  });
+}
+
+function shade(hex){
+  // darken a hex color a bit for the gradient tail
+  const c = hex.replace('#','');
+  const num = parseInt(c,16);
+  const r = Math.max(0,(num>>16)-40), g = Math.max(0,((num>>8)&0xff)-40), b = Math.max(0,(num&0xff)-40);
+  return '#' + [r,g,b].map(x=>x.toString(16).padStart(2,'0')).join('');
+}
+</script>
+</body>
+</html>
