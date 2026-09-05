@@ -214,6 +214,10 @@
   }
   .item-edit:hover{ color:var(--teal); text-decoration:underline; }
   .item-edit:focus-visible{ outline:2px solid var(--rain); outline-offset:2px; border-radius:3px; }
+  .item-reject{ flex-shrink:0; border:none; background:transparent; color:#B2603E; padding:2px 0; font-size:11.5px; font-family:inherit; cursor:pointer; }
+  .item-reject:hover{ color:#8F3F28; text-decoration:underline; }
+  .item-reject:focus-visible{ outline:2px solid var(--rain); outline-offset:2px; border-radius:3px; }
+  li.not-taking .item-text{ color:#B2603E; text-decoration:line-through; text-decoration-color:#B2603E; opacity:0.9; }
   .item-text-edit{
     flex:1; min-width:0; border:1px solid var(--line); background:var(--card);
     border-radius:7px; padding:5px 8px; font-size:14px; font-family:inherit; color:var(--ink);
@@ -451,7 +455,11 @@ async function deleteTripData(id){
 
 function countProgress(data){
   let total = 0, done = 0;
-  data.categories.forEach(cat => cat.items.forEach(it => { total++; if(it.checked) done++; }));
+  data.categories.forEach(cat => cat.items.forEach(it => {
+    if(it.skip) return;
+    total++;
+    if(it.checked) done++;
+  }));
   return { total, done };
 }
 
@@ -658,6 +666,7 @@ async function renderTripPage(id){
       cat.items.forEach((item, ii) => {
         const li = document.createElement('li');
         if(item.checked) li.classList.add('checked');
+        if(item.skip) li.classList.add('not-taking');
         const cbId = `c${ci}-i${ii}`;
         const itemMain = document.createElement('div');
         itemMain.className = 'item-main';
@@ -711,6 +720,19 @@ async function renderTripPage(id){
           textInput.select();
         });
         itemMain.appendChild(editBtn);
+        const rejectBtn = document.createElement('button');
+        rejectBtn.type = 'button';
+        rejectBtn.className = 'item-reject';
+        rejectBtn.textContent = item.skip ? 'levar' : 'não levar';
+        rejectBtn.setAttribute('aria-label', item.skip ? `Voltar a levar ${item.text}` : `Marcar que não quer levar ${item.text}`);
+        rejectBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          item.skip = !item.skip;
+          if(item.skip) item.checked = false;
+          persist();
+          renderCategories();
+        });
+        itemMain.appendChild(rejectBtn);
         li.appendChild(itemMain);
         const commentInput = document.createElement('input');
         commentInput.type = 'text';
@@ -735,7 +757,7 @@ async function renderTripPage(id){
       function addItem(){
         const val = input.value.trim();
         if(!val) return;
-        cat.items.push({ text: val, checked:false, comment:'' });
+        cat.items.push({ text: val, checked:false, skip:false, comment:'' });
         input.value = '';
         persist();
         renderCategories();
