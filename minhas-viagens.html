@@ -234,6 +234,10 @@
   }
 
   footer{ margin-top:36px; text-align:center; font-size:12.5px; color:#8C978F; }
+  .secret-dot{ cursor:default; padding:0 2px; }
+  .secret-dot:hover{ cursor:pointer; }
+  .secret-dot.active{ color:var(--amber); }
+  .card-private{ border-style:dashed; border-color:rgba(214,163,57,0.5); background:#FBF8EF; }
 
   .loading{ padding:60px 0; text-align:center; color:#7C8A85; font-size:14px; }
 
@@ -334,6 +338,10 @@ const DEFAULT_TRIP_DATA = {
   ]},
 };
 
+const PRIVATE_SEEDS = {
+  'guaratuba-set': { name:'Privado', items:['Carregar celular','Carregar JBL','Raspar o corpo','Cortar unhas','Carregar o relógio smart','Pegar JBL','Pegar powerbank'] },
+};
+
 const GENERIC_TEMPLATE = { categories: [
   { name:'Roupas', items:['Roupas pro número de dias','Casaco ou agasalho','Calçado confortável','Pijama'] },
   { name:'Documentos e dinheiro', items:['Documento com foto','Cartão e dinheiro','Confirmação da reserva'] },
@@ -357,13 +365,27 @@ async function saveTrips(trips){
   catch(e){ console.error('erro ao salvar lista de viagens', e); }
 }
 
+async function ensurePrivateSeed(id, data){
+  const seed = PRIVATE_SEEDS[id];
+  if(!seed) return false;
+  const hasPrivate = data.categories.some(c => c.private);
+  if(hasPrivate) return false;
+  data.categories.push({ name: seed.name, private:true, items: seed.items.map(text => ({ text, checked:false })) });
+  return true;
+}
+
 async function loadTripData(id){
   try{
     const res = await window.storage.get('trip-data:' + id);
-    if(res && res.value) return JSON.parse(res.value);
+    if(res && res.value){
+      const data = JSON.parse(res.value);
+      if(await ensurePrivateSeed(id, data)) await saveTripData(id, data);
+      return data;
+    }
   }catch(e){ /* not found yet */ }
   const seed = DEFAULT_TRIP_DATA[id] ? JSON.parse(JSON.stringify(DEFAULT_TRIP_DATA[id])) : JSON.parse(JSON.stringify(GENERIC_TEMPLATE));
   seed.categories.forEach(cat => { cat.items = cat.items.map(text => (typeof text === 'string' ? { text, checked:false } : text)); });
+  await ensurePrivateSeed(id, seed);
   await saveTripData(id, seed);
   return seed;
 }
@@ -547,12 +569,19 @@ async function renderTripPage(id){
       <button id="addCategoryBtn">Adicionar</button>
     </div>
 
-    <footer>seus dados ficam salvos só pra você, neste app.</footer>
+    <footer>seus dados ficam salvos só pra você, neste app<span id="privateToggle" class="secret-dot" aria-label="mostrar itens privados">.</span></footer>
   `;
 
   document.getElementById('backBtn').addEventListener('click', goHome);
 
   const grid = document.getElementById('cardGrid');
+  let showPrivate = false;
+
+  document.getElementById('privateToggle').addEventListener('click', () => {
+    showPrivate = !showPrivate;
+    document.getElementById('privateToggle').classList.toggle('active', showPrivate);
+    renderCategories();
+  });
 
   function updateProgress(){
     const { total, done } = countProgress(data);
@@ -564,13 +593,14 @@ async function renderTripPage(id){
 
   function renderCategories(){
     grid.innerHTML = '';
-    data.categories.forEach((cat, ci) => {
+    const visible = data.categories.filter(cat => showPrivate || !cat.private);
+    visible.forEach((cat, ci) => {
       const card = document.createElement('div');
-      card.className = 'card';
+      card.className = 'card' + (cat.private ? ' card-private' : '');
 
       const head = document.createElement('div');
       head.className = 'card-head';
-      head.innerHTML = `<h2>${cat.name}</h2><span class="card-count">${cat.items.length} itens</span>`;
+      head.innerHTML = `<h2>${cat.private ? '🔒 ' : ''}${cat.name}</h2><span class="card-count">${cat.items.length} itens</span>`;
       card.appendChild(head);
 
       const ul = document.createElement('ul');
