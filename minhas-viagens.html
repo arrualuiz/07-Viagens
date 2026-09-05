@@ -187,7 +187,7 @@
   .card-count{ font-size:12px; color:#7C8A85; white-space:nowrap; }
 
   ul.items{ list-style:none; margin:0; padding:0; }
-  ul.items li{ display:flex; align-items:flex-start; gap:10px; padding:7px 0; }
+  ul.items li{ display:block; padding:8px 0; }
   ul.items label{ display:flex; align-items:flex-start; gap:10px; cursor:pointer; width:100%; font-size:14.5px; }
   ul.items input[type="checkbox"]{
     appearance:none; -webkit-appearance:none;
@@ -207,6 +207,13 @@
   ul.items input[type="checkbox"]:checked{ border-color:var(--teal); background:rgba(46,81,80,0.06); }
   ul.items input[type="checkbox"]:focus-visible{ outline:2px solid var(--rain); outline-offset:2px; }
   li.checked .item-text{ color:#93A09A; text-decoration:line-through; text-decoration-color:#B7C0BB; opacity:0.85; }
+  .item-comment{
+    display:block; width:calc(100% - 29px); margin:4px 0 0 29px;
+    border:none; border-bottom:1px dashed var(--line); background:transparent;
+    padding:4px 0; font-size:12px; font-family:inherit; color:#6C7873;
+  }
+  .item-comment::placeholder{ color:#A3ADA7; }
+  .item-comment:focus-visible{ outline:2px solid var(--rain); outline-offset:2px; border-bottom-color:transparent; }
 
   .add-row{ display:flex; gap:8px; margin-top:12px; padding-top:10px; border-top:1px dashed var(--line); }
   .add-row input[type="text"]{
@@ -638,6 +645,17 @@ async function renderTripPage(id){
           li.classList.toggle('checked', cb.checked);
           persist();
         });
+        const commentInput = document.createElement('input');
+        commentInput.type = 'text';
+        commentInput.className = 'item-comment';
+        commentInput.placeholder = 'adicionar comentário…';
+        commentInput.value = item.comment || '';
+        commentInput.setAttribute('aria-label', `Comentário para ${item.text}`);
+        commentInput.addEventListener('input', () => {
+          item.comment = commentInput.value;
+          persist();
+        });
+        li.appendChild(commentInput);
         ul.appendChild(li);
       });
       card.appendChild(ul);
@@ -650,7 +668,7 @@ async function renderTripPage(id){
       function addItem(){
         const val = input.value.trim();
         if(!val) return;
-        cat.items.push({ text: val, checked:false });
+        cat.items.push({ text: val, checked:false, comment:'' });
         input.value = '';
         persist();
         renderCategories();
